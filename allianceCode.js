@@ -5,6 +5,10 @@ var game = 15;
 
 //we depend on global variables player and game being defined in .php file.
 var images = ["blue.png", "brown.png", "green.png", "orange.png", "pink.png", "red.png", "purple.png", "yellow.png"];
+
+var imageURL = "https://dl.dropboxusercontent.com/u/4745232/alliance.1player.6.3.14/";
+var images = [imageURL + "blue.png", imageURL + "brown.png", imageURL + "green.png", imageURL + "orange.png", imageURL + "pink.png", imageURL + "red.png", imageURL + "purple.png", imageURL + "yellow.png"];
+
 var minId = 0;
 var data = [];
 var busy = false;
