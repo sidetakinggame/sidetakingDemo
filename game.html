@@ -1,0 +1,336 @@
+<?php
+//set player
+$player = 0; 
+if(is_numeric($_GET["player"]))
+	$player = $_GET["player"];
+	
+//set game
+$game = 10; 
+if(is_numeric($_GET["game"]))
+	$game = $_GET["game"];
+?>
+	
+<html>
+<head>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" /><script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script> 
+	<script src="http://alz.so/static/plugins/toggleedit/jquery.toggleedit.js"></script>
+	<script src="allianceCode.js"> </script>
+	
+	<script type="text/javascript">
+		var game = <?=$game?>;
+		var player = <?=$player?>;
+		var round = 0;
+		console.log(game,player);
+		$("p").addClass("new");
+	</script>
+	
+    <style type="text/css"> 
+	body {background-color:#82d9ae; }
+	h1 {font-size:130%; font-family:"arial";}
+	bold {font-size:130%; font-family:"arial";}
+	img.small {width:65px;} 
+	button {cursor: pointer; background-color:#e0e0e0;}
+	button:hover {border-style:solid; border-color:blue;}
+	ul {cursor: pointer; }
+	
+	.highlight {color:red;}
+	
+	#sortable img { width: 75px; }
+	
+	.instructions {
+		display:none;
+		position: absolute;
+		left:-250px;
+		margin-left:50%;		
+		background-color:white;
+		width:500px;
+		top:20%;
+		padding:25px;
+		border:3px solid #a1a1a1;
+		border-radius:25px;
+		cursor: pointer;
+	}
+	
+	</style>
+</head>
+
+<body>
+
+
+<div id=page1 class=instructions >
+
+<h1>The Side-Taking Game</h1>
+<p>
+This game is about choosing sides in fights. Choose sides by ranking your loyalties to the other players in the <span class="highlight"> Choose Ranking </span> box. To change your rankings, drag and drop the icons horizontally from best ally (far left) to worst enemy (far right).  
+</p>
+<p>
+The other players also rank everyone. The <span class="highlight"> Player Rankings </span> table shows everyone's current rankings. When a player changes their ranking, individuals who increased in rank are highlighted in yellow and individuals who decreased in rank are highlighted in red.
+</p>
+<p style="text-align:right;color:gray;">(Click to drag these instructions.)</p>
+
+
+<button onclick="nextPage()">Next</button>
+<button onclick="closeInstructions()">Close</button>
+
+</div>
+<div id=page2 class=instructions >
+
+<p>
+When a <span class="highlight"> fight </span> occurs, all players choose sides based on their current rankings. For example, when Blue fights Brown, Green supports whichever fighter Green ranks better. The fighter who gets more supporters wins. The fighters tie if they have the same number of supporters. 
+</p>
+<p>
+The Score box shows how everyone is doing. The <span class="highlight">Wins,Losses,Ties </span>column shows these values for a round-robin tournament in which each player fights every other player one time with the current rankings. These values change every time a player changes their ranking. They reflect each player's standing in the current split second. 
+</p>
+
+<button onclick="nextPage()">Next</button>
+<button onclick="closeInstructions()">Close</button>
+
+</div>
+<div id=page3 class=instructions >
+<p>
+The <span class="highlight">Score </span>column is the player's score in a timed game. Scoring occurs every 5 seconds during the game. At each 5 second interval, a round-robin tournament occurs so that all players fight one time with all of the other players. Players receive 2 points for a win, 1 point for a tie, and 0 points for a loss. These points are added up for a player's seven fights and then added to their Score. 
+</p>
+
+<p>
+Click the <span class="highlight">Robots </span> button to watch the robot players make ranking decisions (outside of a game). Click the button again to stop the robots. Use the dropdown menu to change how fast the robots make ranking decisions. 
+</p>
+<p>
+Click <span class="highlight"> Random Ranks </span> to randomize all players' rankings. (You will see a lot of highlighting because many rank values will change.) 
+</p>
+<p>
+Use the dropdown menu to choose the length of a game.
+</p>
+
+<button onclick="closeInstructions()">Close</button>
+
+</div>
+
+
+
+<br>&nbsp; 
+<table style="margin: auto;" border=0><tbody><tr><td width=700px>
+
+<!--<button style="width:70;" onclick="fights()"> Fights </button><P>-->
+<!-- <p id="print01">print here </p>
+<button style="width:70;" onclick="print01()"> Print </button><P>
+ -->
+  
+<p>
+&nbsp; &nbsp;<bold>You are:</bold> <img id="self" width=75 src="blue.png" style="vertical-align:middle";/>
+</td><td></td></tr>
+
+<tr><td style="text-align:center; background-color:white; padding:10"> 
+
+<h1>Choose Ranking </h1>
+<ul id="sortable">
+<img id="p1" src="brown.png" />
+<img id="p2" src="green.png"/>
+<img id="p3" src="orange.png"/>
+<img id="p4" src="pink.png"/>
+<img id="p5" src="red.png"/>
+<img id="p6" src="purple.png"/>
+<img id="p7" src="yellow.png"/>
+</ul>
+
+</td><td style="text-align:center; background-color:#82ADD9;";>
+
+<h1>Control Panel</h1>
+
+<table style="margin: auto;"><tr><td>
+<p><button id="robots" class="controls" style="width:120;" onclick="robotsButton()"> Robots </button></p>
+<button id="randomRanks" class="controls" style="width:120;" onclick="randomRanksButton()"> Random Ranks </button>
+</td>
+<td>
+<p><button id="startGame" class="controls" style="width:100;" onclick="initiateGame()">Start Game</button></p>
+
+
+<select id="speed" name="speed" class="controls" onchange="changeSpeed()">
+<option value="1000">Slowest</option>
+<option value="700">Slow</option>
+<option value="400" selected>Avg Speed</option>
+<option value="200">Fast</option>
+<option value="100">Fastest</option>
+</select>
+
+
+</td>
+<td>
+
+
+<select id="timerTotal" name="timerTotal" class="controls" onchange="changeTime()">
+<option value="59">1 min</option>
+<option value="119" selected>2 min</option>
+<option value="179" >3 min</option>
+<option value="239">4 min</option>
+<option value="299">5 min</option>
+</select>
+
+<button onclick=showInstructions() > Help </button>
+
+<p>
+<div id="timer" style="width:100; background-color:#c0d6ec; text-align:center;" > Time: 00 </div>
+</p>
+</td>
+</tr>
+</table>
+
+
+
+
+</td>
+
+<tr><td style="background-color: #d8d8d8; text-align:center;">
+<center>
+<h1>Player Rankings</h1>
+
+<table border=0 cellpadding=0 cellspacing=0 style="text-align:";><tbody>
+<tr style="text-align:center"><td>Player</td><td></td><td>Rank1</td><td>Rank2</td><td>Rank3</td><td>Rank4</td><td>Rank5</td><td>Rank6</td><td>Rank7</td></tr>
+
+<tr style="background-color:adadad;">
+<td><img src="blue.png" id="image00" class="small"></td>
+<td></td>
+<td><img src="blue.png" id="image01" class="small"></td>
+<td><img src="blue.png" id="image02" class="small"></td>
+<td><img src="blue.png" id="image03" class="small"></td>
+<td><img src="blue.png" id="image04" class="small"></td>
+<td><img src="blue.png" id="image05" class="small"></td>
+<td><img src="blue.png" id="image06" class="small"></td>
+<td><img src="blue.png" id="image07" class="small"></td>
+</tr>
+<tr style="background-color:;">
+<td><img src="brown.png" id="image10" class="small"></td>
+<td></td>
+<td><img src="blue.png" id="image11" class="small"></td>
+<td><img src="blue.png" id="image12" class="small"></td>
+<td><img src="blue.png" id="image13" class="small"></td>
+<td><img src="blue.png" id="image14" class="small"></td>
+<td><img src="blue.png" id="image15" class="small"></td>
+<td><img src="blue.png" id="image16" class="small"></td>
+<td><img src="blue.png" id="image17" class="small"></td>
+</tr>
+<tr style="background-color:adadad;">
+<td><img src="green.png" id="image20" class="small"></td>
+<td></td>
+<td><img src="blue.png" id="image21" class="small"></td>
+<td><img src="blue.png" id="image22" class="small"></td>
+<td><img src="blue.png" id="image23" class="small"></td>
+<td><img src="blue.png" id="image24" class="small"></td>
+<td><img src="blue.png" id="image25" class="small"></td>
+<td><img src="blue.png" id="image26" class="small"></td>
+<td><img src="blue.png" id="image27" class="small"></td>
+</tr>
+<tr style="background-color:;">
+<td><img src="orange.png" id="image30" class="small"></td>
+<td></td>
+<td><img src="blue.png" id="image31" class="small"></td>
+<td><img src="blue.png" id="image32" class="small"></td>
+<td><img src="blue.png" id="image33" class="small"></td>
+<td><img src="blue.png" id="image34" class="small"></td>
+<td><img src="blue.png" id="image35" class="small"></td>
+<td><img src="blue.png" id="image36" class="small"></td>
+<td><img src="blue.png" id="image37" class="small"></td>
+</tr>
+<tr style="background-color:adadad;">
+<td><img src="pink.png" id="image40" class="small"></td>
+<td></td>
+<td><img src="blue.png" id="image41" class="small"></td>
+<td><img src="blue.png" id="image42" class="small"></td>
+<td><img src="blue.png" id="image43" class="small"></td>
+<td><img src="blue.png" id="image44" class="small"></td>
+<td><img src="blue.png" id="image45" class="small"></td>
+<td><img src="blue.png" id="image46" class="small"></td>
+<td><img src="blue.png" id="image47" class="small"></td>
+</tr>
+<tr style="background-color:;">
+<td><img src="red.png" id="image50" class="small"></td>
+<td></td>
+<td><img src="blue.png" id="image51" class="small"></td>
+<td><img src="blue.png" id="image52" class="small"></td>
+<td><img src="blue.png" id="image53" class="small"></td>
+<td><img src="blue.png" id="image54" class="small"></td>
+<td><img src="blue.png" id="image55" class="small"></td>
+<td><img src="blue.png" id="image56" class="small"></td>
+<td><img src="blue.png" id="image57" class="small"></td>
+</tr>
+<tr style="background-color:adadad;">
+<td><img src="pink.png" id="image60" class="small"></td>
+<td></td>
+<td><img src="blue.png" id="image61" class="small"></td>
+<td><img src="blue.png" id="image62" class="small"></td>
+<td><img src="blue.png" id="image63" class="small"></td>
+<td><img src="blue.png" id="image64" class="small"></td>
+<td><img src="blue.png" id="image65" class="small"></td>
+<td><img src="blue.png" id="image66" class="small"></td>
+<td><img src="blue.png" id="image67" class="small"></td>
+</tr>
+<tr style="background-color:;">
+<td><img src="red.png" id="image70" class="small"></td>
+<td></td>
+<td><img src="blue.png" id="image71" class="small"></td>
+<td><img src="blue.png" id="image72" class="small"></td>
+<td><img src="blue.png" id="image73" class="small"></td>
+<td><img src="blue.png" id="image74" class="small"></td>
+<td><img src="blue.png" id="image75" class="small"></td>
+<td><img src="blue.png" id="image76" class="small"></td>
+<td><img src="blue.png" id="image77" class="small"></td>
+</tr>
+<tr style="visibility:hidden;"><td>123456789</td><td>12345</td><td>123456789</td><td>123456789</td><td>123456789</td><td>123456789</td><td>123456789</td><td>123456789</td><td>1234567890</td></tr>
+</table></center>
+
+<br>&nbsp;
+</td>
+
+<td width=250 style="vertical-align:top; text-align:center; background-color: d9ae82; #FFEE99;">
+<p> <h1>Score</h1>
+<table width=250 style="margin: auto;" border=0 cellpadding=0 cellspacing=0>
+<tr><td></td><td>Wins,Losses,Ties </td><td>Score</td>  </tr>
+<tr style="background-color:#E4C6A8;"><td>Blue </td><td><b><object id="winloss0"></b></td><td id=score0>0</td> </tr>
+<tr><td>Brown </td><td><b id='winloss1'>.</b></td><td id=score1>0</td> </tr>
+<tr style="background-color:#E4C6A8;"><td>Green </td><td><b id='winloss2'>.</b></td><td id=score2>0</td> </tr>
+<tr><td>Orange </td><td><b id='winloss3'>.</b></td><td id=score3>0</td> </tr>
+<tr style="background-color:#E4C6A8;"><td>Pink </td><td><b id='winloss4'>.</b></td><td id=score4>0</td> </tr>
+<tr><td>Red </td><td><b id='winloss5'>.</b></td><td id=score5>0</td> </tr>
+<tr style="background-color:#E4C6A8;"><td>Purple </td><td><b id='winloss6'>.</b></td><td id=score6>0</td> </tr>
+<tr><td>Yellow </td><td><b id='winloss7'>.</b></td><td id=score7>0</td> </tr>
+</table>
+
+
+
+
+<br>&nbsp;
+
+<h1>Rankings</h1>
+
+<table border=0 cellpadding=0 cellspacing=0 style="text-align:center";><tbody>
+<tr><td>Player</td><td>Blue</td><td>Brown</td><td>Green</td><td>Orange</td><td>Pink</td><td>Red</td><td>Purple</td><td>Yellow</td></tr>
+<tr style="background-color:E4C6A8;"><td>Blue</td><td id=rank00>0</td><td id=rank01>1</td><td id=rank02>2</td><td id=rank03>3</td><td id=rank04>4</td><td id=rank05>5</td><td id=rank06>6</td><td id=rank07>7</td></tr>
+<tr><td>Brown</td><td id=rank10>0</td><td id=rank11>1</td><td id=rank12>2</td><td id=rank13>3</td><td id=rank14>4</td><td id=rank15>5</td><td id=rank16>6</td><td id=rank17>7</td></tr>
+<tr style="background-color:E4C6A8;"><td>Green</td><td id=rank20>0</td><td id=rank21>1</td><td id=rank22>2</td><td id=rank23>3</td><td id=rank24>4</td><td id=rank25>5</td><td id=rank26>6</td><td id=rank27>7</td></tr>
+<tr><td>Orange</td><td id=rank30>0</td><td id=rank31>1</td><td id=rank32>2</td><td id=rank33>3</td><td id=rank34>4</td><td id=rank35>5</td><td id=rank36>6</td><td id=rank37>7</td></tr>
+<tr style="background-color:E4C6A8;"><td>Pink</td><td id=rank40>0</td><td id=rank41>1</td><td id=rank42>2</td><td id=rank43>3</td><td id=rank44>4</td><td id=rank45>5</td><td id=rank46>6</td><td id=rank47>7</td></tr>
+<tr><td>Red</td><td id=rank50>0</td><td id=rank51>1</td><td id=rank52>2</td><td id=rank53>3</td><td id=rank54>4</td><td id=rank55>5</td><td id=rank56>6</td><td id=rank57>7</td></tr>
+<tr style="background-color:E4C6A8;"><td>Purple</td><td id=rank60>0</td><td id=rank61>1</td><td id=rank62>2</td><td id=rank63>3</td><td id=rank64>4</td><td id=rank65>5</td><td id=rank66>6</td><td id=rank67>7</td></tr>
+<tr><td>Yellow</td><td id=rank70>0</td><td id=rank71>1</td><td id=rank72>2</td><td id=rank73>3</td><td id=rank74>4</td><td id=rank75>5</td><td id=rank76>6</td><td id=rank77>7</td></tr>
+<tr style="visibility:hidden;"><td>1234567</td><td>123456</td><td>123456</td><td>123456</td><td>123456</td><td>123456</td><td>123456</td><td>123456</td><td>123456</td></tr>
+
+</table>
+<p>
+
+<p>&nbsp; &nbsp; &nbsp;<p>&nbsp;<p>
+
+</td></tr></table>
+
+<p>&nbsp; &nbsp; &nbsp;<p>&nbsp;<p>
+<p>&nbsp; &nbsp; &nbsp;<p>&nbsp;<p>
+
+
+
+</body>
+</html>
+
+
+
+
+
+
